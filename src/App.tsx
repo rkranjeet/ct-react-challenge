@@ -70,8 +70,12 @@ function App() {
                 justifyContent: "center",
               }}
             >
-              <Button variant="contained" onClick={handleOpen}>
-                Open
+              <Button
+                variant="contained"
+                onClick={handleOpen}
+                style={{ textTransform: "capitalize" }}
+              >
+                Open Date Range Picker
               </Button>
             </div>
           </div>
