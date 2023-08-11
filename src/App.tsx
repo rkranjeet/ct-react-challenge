@@ -1,59 +1,61 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useState } from "react";
 import "./App.css";
-// import { Modal, Button, ButtonToolbar, Placeholder } from "rsuite";
 
-import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import Modal from "@mui/material/Modal";
 import { DateRange } from "@mui/x-date-pickers-pro";
-import { DateRangeCalendar } from "@mui/x-date-pickers-pro/DateRangeCalendar";
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
 import dayjs, { Dayjs } from "dayjs";
 import timezone from "dayjs/plugin/timezone";
 import utc from "dayjs/plugin/utc";
-import { monthNamesShortHands } from "./utils/Dateutils";
+import DateRangeModal from "./components/DateRangeModal";
+import ReportCard from "./components/ReportCard";
+import STRINGS from "./constants/strings";
+import { getHumanReadableDateFullMonth } from "./utils/Dateutils";
+
+import { randomString } from "./utils/RandomUtil";
+import GeneratedReportTable from "./components/GeneratedReportTable";
 
 dayjs.extend(utc);
 dayjs.extend(timezone);
 dayjs.tz.setDefault("Asia/Kolkata");
 
+function getGeneratedReportObj(dateRange: any) {
+  return {
+    reportName: "Report_loren_Ipsum",
+    readableDateRange: `${getHumanReadableDateFullMonth(
+      dateRange[0]
+    )} to ${getHumanReadableDateFullMonth(dateRange[1])}`,
+    dateTime: "April 24, 1:00pm",
+    brand: "Cadbury",
+    download: "icon",
+    key: randomString(),
+  };
+}
 function App() {
   const [open, setOpen] = React.useState(false);
   const handleOpen = () => setOpen(true);
   const handleClose = () => setOpen(false);
+
+  const [generatedReports, setGeneratedReports] = useState<any>([]);
 
   const [dateRange, setDateRange] = React.useState<DateRange<Dayjs>>([
     dayjs.tz("2022-04-17", "Asia/Kolkata"),
     dayjs.tz("2022-04-21", "Asia/Kolkata"),
   ]);
 
-  const convertUTCDateToLocalDate = useCallback((date: any) => {
-    var newDate = new Date(
-      date.getTime() - date.getTimezoneOffset() * 60 * 1000
-    );
-    return newDate;
-  }, []);
-
-  const getHumanReadableDate = useCallback((date: any) => {
-    if (date) {
-      const localDate = convertUTCDateToLocalDate(new Date(date.toString()));
-      return `${
-        monthNamesShortHands[localDate.getMonth()]
-      } ${localDate.getDate()}, ${localDate.getFullYear()}`;
-    }
-    return "";
-  }, []);
-
   const onGenerateReportPress = useCallback(() => {
     console.log("curret Date Range", JSON.stringify(dateRange));
-    setDateRange([
-      dayjs.tz("2022-04-17", "Asia/Kolkata"),
-      dayjs.tz("2022-04-21", "Asia/Kolkata"),
-    ]);
-    handleClose();
-  }, []);
+    if (dateRange[0] && dateRange[1]) {
+      const temp = [...generatedReports, getGeneratedReportObj(dateRange)];
+      setGeneratedReports(temp);
+      setDateRange([
+        dayjs.tz("2022-04-17", "Asia/Kolkata"),
+        dayjs.tz("2022-04-21", "Asia/Kolkata"),
+      ]);
+      handleClose();
+    } else {
+      alert("Complete Date Range");
+    }
+  }, [dateRange, generatedReports]);
 
   return (
     <>
@@ -66,268 +68,163 @@ function App() {
                 display: "flex",
                 flex: 1,
                 flexDirection: "column",
-                alignItems: "center",
-                justifyContent: "center",
+                padding: 24,
               }}
             >
-              <Button
-                variant="contained"
-                onClick={handleOpen}
-                style={{ textTransform: "capitalize" }}
+              <div
+                style={{
+                  display: "flex",
+                  flexDirection: "row",
+                  alignItems: "center",
+                }}
               >
-                Open Date Range Picker
-              </Button>
+                <div
+                  style={{
+                    //fontFamily: "Work Sans",
+                    fontSize: "20px",
+                    fontWeight: "600",
+                    lineHeight: "24px",
+                    letterSpacing: "0em",
+                    textAlign: "left",
+                    color: "rgba(100, 100, 100, 1)",
+                  }}
+                >
+                  Reports
+                </div>
+              </div>
+              <div
+                style={{
+                  marginTop: 24,
+                  marginLeft: -24,
+                  marginRight: -24,
+                  display: "flex",
+                  alignSelf: "stretch",
+                  height: 0.25,
+                  backgroundColor: "rgba(52, 64, 84, 0.2)",
+                }}
+              ></div>
+              {/* //Report Card */}
+              <div
+                style={{
+                  marginTop: 24,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 24,
+                  justifyContent: "space-between",
+                }}
+              >
+                <div
+                  style={{
+                    // fontFamily: "Work Sans",
+                    fontSize: "16px",
+                    fontWeight: "600",
+                    lineHeight: "38px",
+                    letterSpacing: "0em",
+                    textAlign: "left",
+                    color: "rgba(16, 24, 40, 1)",
+                  }}
+                >
+                  Collection Reports
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 12,
+                    //ustifyContent: "space-between",
+                  }}
+                >
+                  <ReportCard
+                    title="Payment Collected"
+                    description={STRINGS.REPORT_CARD_DESCR}
+                    buttonText="Generate Report"
+                    onButtonClick={handleOpen}
+                  />
+                  <ReportCard
+                    title="Pending payments of Creditail- financed invoices"
+                    description={STRINGS.REPORT_CARD_DESCR}
+                    buttonText="Generate Report"
+                    onButtonClick={handleOpen}
+                  />
+                </div>
+              </div>
+              <div
+                style={{
+                  marginTop: 24,
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: 24,
+                  justifyContent: "space-between",
+                }}
+              >
+                <div
+                  style={{
+                    // fontFamily: "Work Sans",
+                    fontSize: "16px",
+                    fontWeight: "600",
+                    lineHeight: "38px",
+                    letterSpacing: "0em",
+                    textAlign: "left",
+                    color: "rgba(16, 24, 40, 1)",
+                  }}
+                >
+                  Credit Financing Reports
+                </div>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    alignItems: "center",
+                    gap: 12,
+                    //ustifyContent: "space-between",
+                  }}
+                >
+                  <ReportCard
+                    title="Financing by Creditail"
+                    description={STRINGS.REPORT_CARD_DESCR}
+                    buttonText="Generate Report"
+                    onButtonClick={handleOpen}
+                  />
+                </div>
+              </div>
+              {generatedReports.length > 0 ? (
+                <div
+                  style={{
+                    marginTop: 48,
+                    display: "flex",
+                    flexDirection: "column",
+                  }}
+                >
+                  <div
+                    style={{
+                      marginBottom: 24,
+                      // fontFamily: "Work Sans",
+                      fontSize: "14px",
+                      fontWeight: "600",
+                      lineHeight: "20px",
+                      letterSpacing: "-0.4000000059604645px",
+                      textAlign: "left",
+                      color: "rgba(48, 49, 61, 1)",
+                    }}
+                  >
+                    LATEST REPORTS
+                  </div>
+                  <GeneratedReportTable generatedReports={generatedReports} />
+                </div>
+              ) : null}
             </div>
           </div>
         </header>
       </div>
-      <Modal
+      <DateRangeModal
         open={open}
-        onClose={handleClose}
-        // style={{ borderWidth: 10, backgroundColor: "red" }}
-      >
-        <div
-          style={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            right: "auto",
-            bottom: "auto",
-            marginRight: "-50%",
-            transform: "translate(-50%, -50%)",
-            backgroundColor: "white",
-            border: "1px solid rgba(242, 244, 247, 1)",
-            borderRadius: 12,
-            display: "flex",
-            flexDirection: "column",
-            flex: 1,
-            padding: 10,
-          }}
-        >
-          <div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "space-around",
-              }}
-            >
-              <img
-                src={require("./assets/images/report.png")}
-                style={{ width: 48, height: 48 }}
-              />
-              <div
-                style={{
-                  marginLeft: 10,
-                  display: "flex",
-                  flex: 1,
-                  flexDirection: "column",
-                  justifyContent: "center",
-                  alignItems: "flex-start",
-                }}
-              >
-                <text
-                  style={{
-                    display: "flex",
-                    flex: 1,
-                    fontWeight: 600,
-                    fontSize: 18,
-                    lineHeight: "28px",
-                  }}
-                >
-                  Generate Report
-                </text>
-                <text
-                  style={{
-                    marginTop: 5,
-                    display: "flex",
-                    flex: 1,
-                    fontWeight: 400,
-                    fontSize: 14,
-                    lineHeight: "20px",
-                    color: "rgba(71, 84, 103, 1)",
-                  }}
-                >
-                  Generate a report for Payments collected in following date and
-                  time range
-                </text>
-              </div>
-              <div>
-                <IconButton onClick={handleClose}>
-                  <img
-                    src={require("./assets/images/x-close.png")}
-                    style={{ width: 24, height: 24 }}
-                  />
-                </IconButton>
-              </div>
-            </div>
-          </div>
-          <div
-            style={{
-              marginTop: 10,
-              display: "flex",
-              alignSelf: "stretch",
-              height: 0.25,
-              backgroundColor: "rgba(52, 64, 84, 0.2)",
-            }}
-          ></div>
-          <LocalizationProvider dateAdapter={AdapterDayjs}>
-            <DateRangeCalendar
-              value={dateRange}
-              timezone="Asia/Kolkata"
-              onChange={(newValue: any) => setDateRange(newValue)}
-            />
-          </LocalizationProvider>
-          <div
-            style={{
-              display: "flex",
-              alignSelf: "stretch",
-              height: 0.25,
-              backgroundColor: "rgba(52, 64, 84, 0.2)",
-            }}
-          ></div>
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-around",
-              marginTop: 15,
-            }}
-          >
-            <div
-              style={{
-                height: 44,
-                width: 272,
-                borderRadius: 6,
-                border: "1px solid rgba(230, 230, 230, 1)",
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  flex: 1,
-                  justifyContent: "center",
-                }}
-              >
-                {getHumanReadableDate(dateRange[0])}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignSelf: "stretch",
-                  width: 1,
-                  backgroundColor: "rgba(230, 230, 230, 1)",
-                }}
-              ></div>
-              <div
-                style={{ display: "flex", flex: 1, justifyContent: "center" }}
-              >
-                8:00 AM
-              </div>
-            </div>
-            <div
-              style={{
-                height: 1,
-                width: 5,
-                backgroundColor: "rgba(102, 112, 133, 1)",
-              }}
-            ></div>
-            <div
-              style={{
-                height: 44,
-                width: 272,
-                borderRadius: 6,
-                border: "1px solid rgba(230, 230, 230, 1)",
-                display: "flex",
-                flexDirection: "row",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  flex: 1,
-                  justifyContent: "center",
-                }}
-              >
-                {getHumanReadableDate(dateRange[1])}
-              </div>
-              <div
-                style={{
-                  display: "flex",
-                  alignSelf: "stretch",
-                  width: 1,
-                  backgroundColor: "rgba(230, 230, 230, 1)",
-                }}
-              ></div>
-              <div
-                style={{ display: "flex", flex: 1, justifyContent: "center" }}
-              >
-                10:00 PM
-              </div>
-            </div>
-          </div>
-          <div
-            style={{
-              marginTop: 15,
-              display: "flex",
-              alignSelf: "stretch",
-              height: 0.25,
-              backgroundColor: "rgba(52, 64, 84, 0.2)",
-            }}
-          ></div>
-          <div
-            style={{
-              marginTop: 15,
-              display: "flex",
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "space-between",
-            }}
-          >
-            <div>
-              <Button
-                //variant="outlined"
-                sx={{
-                  color: "rgba(52, 64, 84, 1)",
-                  borderRadius: 2,
-                  width: 80,
-                  height: 40,
-                  fontSize: 14,
-                  border: "1px solid rgba(208, 213, 221, 1)",
-                  // autoCapitalize: "words",
-                  textTransform: "capitalize",
-                }}
-                onClick={handleClose}
-              >
-                Cancel
-              </Button>
-            </div>
-            <div>
-              <Button
-                variant="contained"
-                sx={{
-                  width: 146,
-                  height: 40,
-                  fontSize: 14,
-                  // autoCapitalize: "words",
-                  textTransform: "capitalize",
-                }}
-                onClick={onGenerateReportPress}
-              >
-                Generate Report
-              </Button>
-            </div>
-          </div>
-        </div>
-      </Modal>
+        handleOpen={handleOpen}
+        handleClose={handleClose}
+        dateRange={dateRange}
+        onDateRangeChange={(newDateRange: any) => setDateRange(newDateRange)}
+        onGenerateReportPress={onGenerateReportPress}
+      />
     </>
   );
 }

@@ -27,3 +27,28 @@ export const monthNamesShortHands = [
   "Nov",
   "Dec",
 ];
+
+export const convertUTCDateToLocalDate = (date: any) => {
+  var newDate = new Date(date.getTime() - date.getTimezoneOffset() * 60 * 1000);
+  return newDate;
+};
+
+export const getHumanReadableDate = (date: any) => {
+  if (date) {
+    const localDate = convertUTCDateToLocalDate(new Date(date.toString()));
+    return `${
+      monthNamesShortHands[localDate.getMonth()]
+    } ${localDate.getDate()}, ${localDate.getFullYear()}`;
+  }
+  return "";
+};
+
+export const getHumanReadableDateFullMonth = (date: any) => {
+  if (date) {
+    const localDate = convertUTCDateToLocalDate(new Date(date.toString()));
+    return `${
+      monthNames[localDate.getMonth()]
+    } ${localDate.getDate()}, ${localDate.getFullYear()}`;
+  }
+  return "";
+};
